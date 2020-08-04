@@ -9,3 +9,4 @@ def complete_port_scanner(q, ip, port):
     while True:
         (clientSocket, clientAddress) = s.accept()
         q.put("Se está detectando un escaneo de puerto.")
+        s.close()

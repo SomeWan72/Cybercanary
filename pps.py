@@ -3,7 +3,7 @@ import struct
 from IPy import IP
 
 
-def partial_port_scanner(q):
+def partial_port_scanner(q, ip_list):
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 
     while True:
@@ -27,7 +27,7 @@ def partial_port_scanner(q):
             source_address = socket.inet_ntoa(ip_header[8])
             destination_address = socket.inet_ntoa(ip_header[9])
 
-            if IP(source_address).iptype() != 'PRIVATE':
+            if IP(source_address).iptype() != 'PRIVATE' and IP(source_address) not in ip_list:
                 if ip_protocol == 6:
                     tcp_start = ip_length + eth_length
                     tcp_char = packet[tcp_start:tcp_start + 20]
@@ -39,6 +39,7 @@ def partial_port_scanner(q):
                     ack = tcp_header[3]
 
                     q.put("Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
+                    s.close()
 
                 elif ip_protocol == 17:
                     udp_start = ip_length + eth_length
@@ -51,6 +52,7 @@ def partial_port_scanner(q):
                     checksum = udp_header[3]
 
                     q.put("Paquete UDP enviado desde " + source_address + " al puerto " + str(destination_port))
+                    s.close()
 
                 elif ip_protocol == 1:
                     icmp_start = ip_length + eth_length
@@ -62,3 +64,4 @@ def partial_port_scanner(q):
                     checksum = icmp_header[0]
 
                     q.put("Paquete ICMP enviado desde " + source_address)
+                    s.close()
