@@ -39,9 +39,12 @@ def observer(q):
             warning_label.config(text="WARNING")
             detection_message_label = Label(warning_window, font=('arial', 25, 'bold'), fg='white', bg='black', pady=25)
             detection_message_label.pack()
-            detection_message_label.config(text="El dispositivo ha detectado posibles amenazas")
+            detection_message_label.config(text="El dispositivo ha detectado posibles amenazas a las " + current_time)
             threat_list = Listbox(warning_window, font='arial', width=100)
             threat_list.pack()
+            communication_cut_label = Label(warning_window, font=('arial', 10, 'bold'), fg='white', bg='black', pady=25)
+            communication_cut_label.pack()
+            communication_cut_label.config(text="Los puertos han sido cerrados para impedir el ataque.")
             index = 0
 
             while not q.empty():
