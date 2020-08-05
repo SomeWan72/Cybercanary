@@ -36,7 +36,7 @@ def observer(q):
 
             warning_label = Label(warning_window, font=('arial', 150, 'bold'), fg='red', bg='black')
             warning_label.pack()
-            warning_label.config(text="WARNING")
+            warning_label.config(text="AVISO")
             detection_message_label = Label(warning_window, font=('arial', 25, 'bold'), fg='white', bg='black', pady=25)
             detection_message_label.pack()
             detection_message_label.config(text="El dispositivo ha detectado posibles amenazas a las " + current_time)
