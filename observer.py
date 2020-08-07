@@ -3,12 +3,16 @@ from psutil import cpu_percent, virtual_memory
 from tkinter import *
 
 
-def observer(q):
+def observer(detection_queue, com_cut_queue):
     observer_window = Tk()
     observer_window.attributes("-fullscreen", True)
     observer_window.configure(background='black')
     observer_window.title("Canario")
     observer_window.bind("x", quit)
+
+    def close_communications():
+        if ccc_var.get() == 1:
+            com_cut_queue.put("Cortar")
 
     clock_label = Label(observer_window, font=('arial', 150, 'bold'), fg='yellow', bg='black')
     clock_label.pack()
@@ -18,6 +22,13 @@ def observer(q):
     cpu_label.pack()
     ram_label = Label(observer_window, font=('arial', 50, 'bold'), fg='skyblue', bg='black')
     ram_label.pack()
+    ccc_var = IntVar()
+    com_cut_check = Checkbutton(observer_window, font=('arial', 15), fg='white', bg='black', selectcolor='black',
+                                text='Cortar las comunicaciones tras un ataque.',
+                                variable=ccc_var, onvalue=1, offvalue=0)
+    com_cut_check.pack()
+    com_cut_check.place(rely=0.975, relx=0, anchor=SW)
+    com_cut_check.select()
 
     def tick():
         current_time = time.strftime('%H:%M:%S')
@@ -27,7 +38,8 @@ def observer(q):
         cpu_label.config(text="CPU: " + str(cpu_percent(None)))
         ram_label.config(text="RAM: " + str(virtual_memory().percent))
 
-        if not q.empty():
+        if not detection_queue.empty():
+            close_communications()
             warning_window = Toplevel(observer_window)
             # warning_window.attributes("-fullscreen", True)
             warning_window.configure(background='black')
@@ -47,8 +59,8 @@ def observer(q):
             communication_cut_label.config(text="Los puertos han sido cerrados para impedir el ataque.")
             index = 0
 
-            while not q.empty():
-                threat_list.insert(index, q.get())
+            while not detection_queue.empty():
+                threat_list.insert(index, detection_queue.get())
 
         clock_label.after(200, tick)
 
