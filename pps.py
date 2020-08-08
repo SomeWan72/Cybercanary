@@ -60,3 +60,6 @@ def partial_port_scanner(detection_queue, com_cut_queue, s, ip_list):
                     checksum = icmp_header[0]
 
                     detection_queue.put("Paquete ICMP enviado desde " + source_address)
+
+        if not com_cut_queue.empty():
+            s.close()
