@@ -4,11 +4,13 @@ from psutil import cpu_percent, virtual_memory
 from tkinter import *
 
 
-def reset_canary():
+def reset_canary(cps_socket, pps_socket):
+    cps_socket.close()
+    pps_socket.close()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 
-def observer(detection_queue, com_cut_queue):
+def observer(detection_queue, cps_socket, pps_socket):
     observer_window = Tk()
     observer_window.attributes("-fullscreen", True)
     observer_window.configure(background='black')
@@ -31,7 +33,7 @@ def observer(detection_queue, com_cut_queue):
     com_cut_check.place(rely=0.975, relx=0.01, anchor=SW)
     com_cut_check.select()
     reset_button = Button(observer_window, font=('arial', 15), text='Reiniciar',
-                          command=reset_canary)
+                          command=lambda: reset_canary(cps_socket, pps_socket))
     reset_button.pack()
     reset_button.place(rely=0.975, relx=0.99, anchor=SE)
 
@@ -47,7 +49,8 @@ def observer(detection_queue, com_cut_queue):
             com_cut_text = ""
             if ccc_var.get() == 1:
                 com_cut_text = "Los puertos han sido cerrados para impedir el ataque."
-                com_cut_queue.put("Cortar")
+                cps_socket.close()
+                pps_socket.close()
 
             warning_window = Toplevel(observer_window)
             # warning_window.attributes("-fullscreen", True)

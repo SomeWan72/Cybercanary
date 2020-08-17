@@ -3,8 +3,8 @@ import struct
 from IPy import IP
 
 
-def partial_port_scanner(detection_queue, com_cut_queue, s, ip_list):
-    while com_cut_queue.empty():
+def partial_port_scanner(detection_queue, s, ip_list):
+    while True:
         packet = s.recvfrom(65565)
         packet = packet[0]
 
@@ -36,11 +36,12 @@ def partial_port_scanner(detection_queue, com_cut_queue, s, ip_list):
                     sequence = tcp_header[2]
                     ack = tcp_header[3]
 
-                    detection_queue.put("Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
+                    detection_queue.put(
+                        "Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
 
                 elif ip_protocol == 17:
                     udp_start = ip_length + eth_length
-                    udp_char = packet[udp_start:udp_start+8]
+                    udp_char = packet[udp_start:udp_start + 8]
                     udp_header = struct.unpack('!HHHH', udp_char)
 
                     source_port = udp_header[0]
@@ -48,7 +49,8 @@ def partial_port_scanner(detection_queue, com_cut_queue, s, ip_list):
                     length = udp_header[2]
                     checksum = udp_header[3]
 
-                    detection_queue.put("Paquete UDP enviado desde " + source_address + " al puerto " + str(destination_port))
+                    detection_queue.put(
+                        "Paquete UDP enviado desde " + source_address + " al puerto " + str(destination_port))
 
                 elif ip_protocol == 1:
                     icmp_start = ip_length + eth_length
@@ -60,6 +62,3 @@ def partial_port_scanner(detection_queue, com_cut_queue, s, ip_list):
                     checksum = icmp_header[0]
 
                     detection_queue.put("Paquete ICMP enviado desde " + source_address)
-
-        if not com_cut_queue.empty():
-            s.close()
