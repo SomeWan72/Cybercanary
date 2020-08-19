@@ -1,10 +1,4 @@
-import time
-import socket
-
-
-def complete_port_scanner(detection_queue, comm_cut_queue, s, ip, port):
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((ip, port))
+def complete_port_scanner(detection_queue, comm_cut_queue, s):
     s.listen()
 
     while comm_cut_queue.empty():

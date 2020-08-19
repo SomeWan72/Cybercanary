@@ -16,6 +16,8 @@ if __name__ == '__main__':
                    "/32 -p tcp -m tcp --dport 1:65535 -j DNAT --to-destination " + ip + ":" + str(port_cps), shell=True)
 
     cps_socket = socket.socket()
+    cps_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    cps_socket.bind((ip, port_cps))
     pps_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 
     f = open("ip.txt", "r")
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     detection_queue = Queue()
     comm_cut_queue = Queue()
 
-    cps_process = Process(target=complete_port_scanner, args=(detection_queue, comm_cut_queue, cps_socket, ip, port_cps))
+    cps_process = Process(target=complete_port_scanner, args=(detection_queue, comm_cut_queue, cps_socket))
     pps_process = Process(target=partial_port_scanner, args=(detection_queue, comm_cut_queue, pps_socket, ip_list))
     obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue))
 
