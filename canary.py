@@ -27,14 +27,20 @@ if __name__ == '__main__':
     f.close()
 
     detection_queue = Queue()
+    comm_cut_queue = Queue()
 
-    cps_process = Process(target=complete_port_scanner, args=(detection_queue, cps_socket, ip, port_cps))
-    pps_process = Process(target=partial_port_scanner, args=(detection_queue, pps_socket, ip_list))
-    vig_process = Process(target=observer, args=(detection_queue, cps_socket, pps_socket))
+    cps_process = Process(target=complete_port_scanner, args=(detection_queue, comm_cut_queue, cps_socket, ip, port_cps))
+    pps_process = Process(target=partial_port_scanner, args=(detection_queue, comm_cut_queue, pps_socket, ip_list))
+    obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue))
 
     cps_process.start()
     pps_process.start()
-    vig_process.start()
+    obs_process.start()
+
     cps_process.join()
     pps_process.join()
-    vig_process.join()
+    obs_process.join()
+
+    cps_process.close()
+    pps_process.close()
+    obs_process.close()

@@ -3,8 +3,8 @@ import struct
 from IPy import IP
 
 
-def partial_port_scanner(detection_queue, s, ip_list):
-    while True:
+def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
+    while comm_cut_queue.empty():
         packet = s.recvfrom(65565)
         packet = packet[0]
 
@@ -62,3 +62,5 @@ def partial_port_scanner(detection_queue, s, ip_list):
                     checksum = icmp_header[0]
 
                     detection_queue.put("Paquete ICMP enviado desde " + source_address)
+
+    s.close()
