@@ -6,6 +6,7 @@ from tkinter import *
 
 def reset_canary(comm_cut_queue):
     comm_cut_queue.put("Cortar")
+    time.sleep(1)
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 
@@ -47,6 +48,7 @@ def observer(detection_queue, comm_cut_queue):
         if not detection_queue.empty():
             com_cut_text = ""
             if ccc_var.get() == 1:
+                time.sleep(1)
                 comm_cut_queue.put("Cortar")
                 com_cut_text = "Los puertos han sido cerrados para impedir el ataque."
 

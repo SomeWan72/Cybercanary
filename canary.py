@@ -15,10 +15,13 @@ if __name__ == '__main__':
     subprocess.run("iptables -t nat -A PREROUTING -d " + ip +
                    "/32 -p tcp -m tcp --dport 1:65535 -j DNAT --to-destination " + ip + ":" + str(port_cps), shell=True)
 
+    socket.setdefaulttimeout(1)
+
     cps_socket = socket.socket()
     cps_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     cps_socket.bind((ip, port_cps))
     pps_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+
 
     f = open("ip.txt", "r")
     ip_list = list()
