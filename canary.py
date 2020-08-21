@@ -8,7 +8,7 @@ from IPy import IP
 
 
 if __name__ == '__main__':
-    ip = "192.168.1.66"
+    ip = subprocess.run("hostname -I", shell=True, capture_output=True, text=True).stdout.strip()
     port_cps = 11944
 
     subprocess.run("iptables -t nat -A PREROUTING -d " + ip + "/32 -p tcp -m tcp --dport 22 -j ACCEPT", shell=True)
@@ -21,7 +21,6 @@ if __name__ == '__main__':
     cps_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     cps_socket.bind((ip, port_cps))
     pps_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
-
 
     f = open("ip.txt", "r")
     ip_list = list()
