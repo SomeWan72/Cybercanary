@@ -4,6 +4,7 @@ import socket
 from cps import complete_port_scanner
 from pps import partial_port_scanner
 from observer import observer
+from decoy import decoy
 from IPy import IP
 
 
@@ -36,15 +37,19 @@ if __name__ == '__main__':
     cps_process = Process(target=complete_port_scanner, args=(detection_queue, comm_cut_queue, cps_socket))
     pps_process = Process(target=partial_port_scanner, args=(detection_queue, comm_cut_queue, pps_socket, ip_list))
     obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue))
+    dec_process = Process(target=decoy)
 
     cps_process.start()
     pps_process.start()
     obs_process.start()
+    dec_process.start()
 
     cps_process.join()
     pps_process.join()
     obs_process.join()
+    dec_process.join()
 
     cps_process.close()
     pps_process.close()
     obs_process.close()
+    dec_process.close()

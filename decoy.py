@@ -108,7 +108,7 @@ def run_server():
         logging.info('Done')
 
 
-if __name__ == '__main__':
+def decoy():
     logging.basicConfig(
         level=10,
         format="%(asctime)s %(filename)s:%(lineno)s %(levelname)s %(message)s"
