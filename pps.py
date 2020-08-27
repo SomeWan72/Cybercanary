@@ -3,7 +3,33 @@ import struct
 from IPy import IP
 
 
+def get_flags(packet):
+    URG_F = {0: "", 1: "URG"}
+    ACK_F = {0: "", 1: "ACK"}
+    PSH_F = {0: "", 1: "PSH"}
+    RST_F = {0: "", 1: "RST"}
+    SYN_F = {0: "", 1: "SYN"}
+    FIN_F = {0: "", 1: "FIN"}
+
+    URG = packet & 0x020
+    URG >>= 5
+    ACK = packet & 0x010
+    ACK >>= 4
+    PSH = packet & 0x008
+    PSH >>= 3
+    RST = packet & 0x004
+    RST >>= 2
+    SYN = packet & 0x002
+    SYN >>= 1
+    FIN = packet & 0x001
+    FIN >>= 0
+
+    flags = [URG_F[URG], ACK_F[ACK], PSH_F[PSH], RST_F[RST], SYN_F[SYN], FIN_F[FIN]]
+    return flags
+
+
 def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
+    suspects = dict()
     while comm_cut_queue.empty():
         try:
             packet = s.recvfrom(65565)
@@ -36,9 +62,20 @@ def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
                         destination_port = tcp_header[1]
                         sequence = tcp_header[2]
                         ack = tcp_header[3]
+                        flags = get_flags(tcp_header[5])
 
-                        detection_queue.put(
-                            "Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
+                        if flags[4] == "SYN":
+                            if source_address not in suspects:
+                                suspects[source_address] = 0
+
+                            suspects[source_address] += 1
+
+                            if suspects[source_address] > 20:
+                                detection_queue.put("Escaneo de puertos detectado desde " + source_address)
+
+                        else:
+                            detection_queue.put(
+                                "Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
 
                     elif ip_protocol == 17:
                         udp_start = ip_length + eth_length
