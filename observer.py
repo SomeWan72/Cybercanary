@@ -10,7 +10,71 @@ def reset_canary(comm_cut_queue):
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 
-def observer(detection_queue, comm_cut_queue):
+def delete_ip(observer_window, ip_list, comm_cut_queue):
+    def destroy_ip():
+        bad_ip = str(white_list.get(white_list.curselection()))
+        if bad_ip == "":
+            print("empty input")
+        else:
+            with open("ip.txt", "w") as f:
+                for good_ip in ip_list:
+                    if str(good_ip).strip("\n") != bad_ip:
+                        f.write(str(good_ip) + "\n")
+        delete_window.destroy()
+        reset_canary(comm_cut_queue)
+
+    delete_window = Toplevel(observer_window)
+    delete_window.attributes("-fullscreen", True)
+    delete_window.configure(background='black')
+    delete_window.title("Canario")
+
+    ip_delete_label = Label(delete_window, font=('arial', 25, 'bold'), fg='skyblue', bg='black')
+    ip_delete_label.pack()
+    ip_delete_label.config(text="Señale la IP que desea eliminar y, luego, pulse en el botón:", pady=25)
+    white_list = Listbox(delete_window, font='arial', width=100)
+    white_list.pack()
+    delete_button = Button(delete_window, text="Eliminar", command=destroy_ip)
+    delete_button.pack()
+    back_button = Button(delete_window, text="Regresar", command=delete_window.destroy)
+    back_button.pack()
+    back_button.place(rely=0.975, relx=0.01, anchor=SW)
+
+    index = 0
+
+    for ip in ip_list:
+        white_list.insert(index, ip)
+        index += 1
+
+
+def add_ip(observer_window, comm_cut_queue):
+    def insert_ip():
+        if ip_entry.get() == "":
+            print("empty input")
+        else:
+            new_ip = str(ip_entry.get())
+            with open("ip.txt", "a") as f:
+                f.write(new_ip)
+            add_window.destroy()
+            reset_canary(comm_cut_queue)
+
+    add_window = Toplevel(observer_window)
+    add_window.attributes("-fullscreen", True)
+    add_window.configure(background='black')
+    add_window.title("Canario")
+
+    ip_insert_label = Label(add_window, font=('arial', 25, 'bold'), fg='skyblue', bg='black')
+    ip_insert_label.pack()
+    ip_insert_label.config(text="Inserte la IP para no ser considerada una amenaza:", pady=25)
+    ip_entry = Entry(add_window)
+    ip_entry.pack()
+    add_button = Button(add_window, text="Insertar", command=insert_ip, pady=25)
+    add_button.pack()
+    back_button = Button(add_window, text="Regresar", command=add_window.destroy)
+    back_button.pack()
+    back_button.place(rely=0.975, relx=0.01, anchor=SW)
+
+
+def observer(detection_queue, comm_cut_queue, ip_list):
     observer_window = Tk()
     observer_window.attributes("-fullscreen", True)
     observer_window.configure(background='black')
@@ -36,6 +100,14 @@ def observer(detection_queue, comm_cut_queue):
                           command=lambda: reset_canary(comm_cut_queue))
     reset_button.pack()
     reset_button.place(rely=0.975, relx=0.99, anchor=SE)
+    add_button = Button(observer_window, font=('arial', 15), text='Insertar IP',
+                        command=lambda: add_ip(observer_window, comm_cut_queue))
+    add_button.pack()
+    add_button.place(rely=0.025, relx=0.01, anchor=NW)
+    delete_button = Button(observer_window, font=('arial', 15), text='Eliminar IP',
+                           command=lambda: delete_ip(observer_window, ip_list, comm_cut_queue))
+    delete_button.pack()
+    delete_button.place(rely=0.1, relx=0.01, anchor=NW)
 
     def tick():
         current_time = time.strftime('%H:%M:%S')
@@ -53,7 +125,6 @@ def observer(detection_queue, comm_cut_queue):
                 com_cut_text = "Los puertos han sido cerrados para impedir el ataque."
 
             warning_window = Toplevel(observer_window)
-            # warning_window.attributes("-fullscreen", True)
             warning_window.configure(background='black')
             warning_window.title("Canario")
             warning_window.bind("x", quit)
@@ -73,6 +144,7 @@ def observer(detection_queue, comm_cut_queue):
 
             while not detection_queue.empty():
                 threat_list.insert(index, detection_queue.get())
+                index += 1
 
         clock_label.after(200, tick)
 

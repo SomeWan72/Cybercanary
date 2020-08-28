@@ -23,20 +23,18 @@ if __name__ == '__main__':
     cps_socket.bind((ip, port_cps))
     pps_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 
-    f = open("ip.txt", "r")
-    ip_list = list()
+    with open("ip.txt", "r") as f:
+        ip_list = list()
 
-    for line in f:
-        ip_list.append(IP(line))
-
-    f.close()
+        for line in f:
+            ip_list.append(IP(line))
 
     detection_queue = Queue()
     comm_cut_queue = Queue()
 
     cps_process = Process(target=complete_port_scanner, args=(detection_queue, comm_cut_queue, cps_socket))
     pps_process = Process(target=partial_port_scanner, args=(detection_queue, comm_cut_queue, pps_socket, ip_list))
-    obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue))
+    obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue, ip_list))
     dec_process = Process(target=decoy)
 
     cps_process.start()
