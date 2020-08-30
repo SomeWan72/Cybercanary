@@ -1,7 +1,4 @@
 from __future__ import division
-
-import os
-import sys
 import subprocess
 from webthing import Action, Event, Property, SingleThing, Thing, Value, WebThingServer
 import logging
