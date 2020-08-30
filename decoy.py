@@ -1,4 +1,8 @@
 from __future__ import division
+
+import os
+import sys
+import subprocess
 from webthing import Action, Event, Property, SingleThing, Thing, Value, WebThingServer
 import logging
 import time
@@ -97,15 +101,11 @@ def initialize_thing():
 
 def run_server():
     thing = initialize_thing()
+    subprocess.run("fuser -k 8888/tcp", shell=True)
     server = WebThingServer(SingleThing(thing), port=8888)
 
-    try:
-        logging.info('Server starts')
-        server.start()
-    except KeyboardInterrupt:
-        logging.info('Server stops')
-        server.stop()
-        logging.info('Done')
+    logging.info('Server starts')
+    server.start()
 
 
 def decoy():
