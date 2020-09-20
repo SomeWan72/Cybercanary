@@ -1,42 +1,16 @@
 from __future__ import division
-import subprocess
-from webthing import Action, Event, Property, SingleThing, Thing, Value, WebThingServer
+from webthing import Action, Property, SingleThing, Thing, Value, WebThingServer
 import logging
-import time
+import subprocess
 import uuid
 
 
-class AmbientLightUpEvent(Event):
-    def __init__(self, thing, data):
-        Event.__init__(self, thing, 'ambient_light_up', data=data)
-
-
-class AmbientLightDownEvent(Event):
-    def __init__(self, thing, data):
-        Event.__init__(self, thing, 'ambient_light_down', data=data)
-
-
-class BrightAction(Action):
+class ChangeBrightnessAction(Action):
     def __init__(self, thing, input_):
         Action.__init__(self, uuid.uuid4().hex, thing, 'change_brightness', input_=input_)
 
     def perform_action(self):
-        hour = int(time.strftime('%H'))
-        if 18 < hour < 21:
-            self.thing.set_property('on', True)
-            self.thing.set_property('brightness', 50)
-            self.thing.add_event(AmbientLightUpEvent(self.thing, 50))
-        elif 5 < hour < 9:
-            self.thing.set_property('brightness', 50)
-            self.thing.add_event(AmbientLightDownEvent(self.thing, 50))
-        elif hour > 20 or hour < 6:
-            self.thing.set_property('brightness', 100)
-            self.thing.add_event(AmbientLightUpEvent(self.thing, 100))
-        elif 8 < hour < 19:
-            self.thing.set_property('on', False)
-            self.thing.set_property('brightness', 0)
-            self.thing.add_event(AmbientLightDownEvent(self.thing, 0))
-            logging.info('Off')
+        self.thing.set_property('brightness', self.input['brightness'])
 
 
 def initialize_thing():
@@ -72,26 +46,22 @@ def initialize_thing():
         'change_brightness', {
             'title': 'Change Brightness',
             'description': "Change the lamp brightness to a given level",
+            'input': {
+                'type': 'object',
+                'required': [
+                    'brightness',
+                ],
+                'properties': {
+                    'brightness': {
+                        'type': 'integer',
+                        'minimum': 0,
+                        'maximum': 100,
+                        'unit': 'percent',
+                    },
+                },
+            },
         },
-        BrightAction)
-
-    thing.add_available_event(
-        'ambient_light_up',
-        {
-            'description': 'The ambient light has increase',
-            'type': 'number',
-            'unit': 'degree celsius',
-        }
-    )
-
-    thing.add_available_event(
-        'ambient_light_down',
-        {
-            'description': 'The ambient light has decrease',
-            'type': 'number',
-            'unit': 'degree celsius',
-        }
-    )
+        ChangeBrightnessAction)
 
     return thing
 
@@ -100,8 +70,6 @@ def run_server():
     thing = initialize_thing()
     subprocess.run("fuser -k 8888/tcp", shell=True)
     server = WebThingServer(SingleThing(thing), port=8888)
-
-    logging.info('Server starts')
     server.start()
 
 
