@@ -72,7 +72,7 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
 
                                 suspects[source_address] += 1
 
-                                if suspects[source_address] == 10:
+                                if suspects[source_address] == 50:
                                     detection_queue.put("Escaneo de puertos detectado desde " + source_address)
 
                     elif IP(source_address).iptype() != 'PRIVATE' and ip_protocol == 17:
