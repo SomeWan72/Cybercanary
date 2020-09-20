@@ -10,23 +10,23 @@ from IPy import IP
 
 
 if __name__ == '__main__':
-    ip = subprocess.run("hostname -I", shell=True, capture_output=True, text=True).stdout.strip()
-    socket.setdefaulttimeout(1)
+    hostname = subprocess.run("hostname -I", shell=True, capture_output=True, text=True).stdout.strip()
     socket.setdefaulttimeout(1)
     detector_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 
     with open("ip.txt", "r") as f:
         ip_list = list()
-        ip_list.append(IP(ip))
+        ip_list.append(IP(hostname))
 
         for line in f:
             ip_list.append(IP(line))
 
     detection_queue = Queue()
     comm_cut_queue = Queue()
+    reset_iptables_queue = Queue()
 
-    det_process = Process(target=detectors, args=(detection_queue, comm_cut_queue, detector_socket, ip_list))
-    obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue, ip_list))
+    det_process = Process(target=detectors, args=(detection_queue, comm_cut_queue, reset_iptables_queue, detector_socket, ip_list))
+    obs_process = Process(target=observer, args=(detection_queue, comm_cut_queue, reset_iptables_queue, ip_list))
     dec_process = Process(target=decoy)
 
     det_process.start()

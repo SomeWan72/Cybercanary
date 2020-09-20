@@ -1,5 +1,7 @@
 import socket
 import struct
+import subprocess
+
 from IPy import IP
 
 
@@ -28,7 +30,7 @@ def get_flags(packet):
     return flags
 
 
-def detectors(detection_queue, comm_cut_queue, s, ip_list):
+def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list):
     suspects = dict()
     while comm_cut_queue.empty():
         try:
@@ -89,4 +91,6 @@ def detectors(detection_queue, comm_cut_queue, s, ip_list):
         except socket.timeout:
             pass
 
+    subprocess.run("iptables -A INPUT -j DROP", shell=True)
+    reset_iptables_queue.put("RESET")
     s.close()

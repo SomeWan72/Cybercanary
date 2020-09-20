@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import socket
 from psutil import cpu_percent, virtual_memory
@@ -18,7 +19,9 @@ def error_message(parent_window, msg):
     error_button.pack()
 
 
-def reset_canary(comm_cut_queue):
+def reset_canary(comm_cut_queue, reset_iptables_queue):
+    if not reset_iptables_queue.empty():
+        subprocess.run("iptables -D INPUT -j DROP", shell=True)
     comm_cut_queue.put("Cortar")
     time.sleep(1)
     os.execl(sys.executable, sys.executable, *sys.argv)
@@ -107,7 +110,7 @@ def add_ip(observer_window, ip_list, comm_cut_queue):
     back_button.place(rely=0.975, relx=0.01, anchor=SW)
 
 
-def observer(detection_queue, comm_cut_queue, ip_list):
+def observer(detection_queue, comm_cut_queue, reset_iptables_queue, ip_list):
     observer_window = Tk()
     observer_window.attributes("-fullscreen", True)
     observer_window.configure(background='black')
@@ -135,7 +138,7 @@ def observer(detection_queue, comm_cut_queue, ip_list):
     com_cut_check.select()
 
     reset_button = Button(observer_window, font=('arial', 15), text='Reiniciar',
-                          command=lambda: reset_canary(comm_cut_queue))
+                          command=lambda: reset_canary(comm_cut_queue, reset_iptables_queue))
     reset_button.pack()
     reset_button.place(rely=0.975, relx=0.99, anchor=SE)
 
