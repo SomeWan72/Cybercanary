@@ -28,7 +28,7 @@ def get_flags(packet):
     return flags
 
 
-def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
+def detectors(detection_queue, comm_cut_queue, s, ip_list):
     suspects = dict()
     while comm_cut_queue.empty():
         try:
@@ -70,7 +70,7 @@ def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
 
                                 suspects[source_address] += 1
 
-                                if suspects[source_address] == 20:
+                                if suspects[source_address] == 10:
                                     detection_queue.put("Escaneo de puertos detectado desde " + source_address)
 
                     elif IP(source_address).iptype() != 'PRIVATE' and ip_protocol == 17:
