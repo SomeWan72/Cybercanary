@@ -50,7 +50,7 @@ def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
                 ip_protocol = ip_header[6]
                 source_address = socket.inet_ntoa(ip_header[8])
 
-                if IP(source_address).iptype() != 'PRIVATE' and IP(source_address) not in ip_list:
+                if IP(source_address) not in ip_list:
                     if ip_protocol == 6:
                         tcp_start = ip_length + eth_length
                         tcp_char = packet[tcp_start:tcp_start + 20]
@@ -59,20 +59,21 @@ def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
                         destination_port = tcp_header[1]
                         flags = get_flags(tcp_header[5])
 
-                        if flags[4] == "SYN":
-                            if source_address not in suspects:
-                                suspects[source_address] = 0
-
-                            suspects[source_address] += 1
-
-                            if suspects[source_address] > 20:
-                                detection_queue.put("Escaneo de puertos detectado desde " + source_address)
-
-                        else:
+                        if IP(source_address).iptype() != 'PRIVATE':
                             detection_queue.put(
                                 "Paquete TCP enviado desde " + source_address + " al puerto " + str(destination_port))
 
-                    elif ip_protocol == 17:
+                        else:
+                            if flags[4] == "SYN":
+                                if source_address not in suspects:
+                                    suspects[source_address] = 0
+
+                                suspects[source_address] += 1
+
+                                if suspects[source_address] == 20:
+                                    detection_queue.put("Escaneo de puertos detectado desde " + source_address)
+
+                    elif IP(source_address).iptype() != 'PRIVATE' and ip_protocol == 17:
                         udp_start = ip_length + eth_length
                         udp_char = packet[udp_start:udp_start + 8]
                         udp_header = struct.unpack('!HHHH', udp_char)
@@ -82,7 +83,7 @@ def partial_port_scanner(detection_queue, comm_cut_queue, s, ip_list):
                         detection_queue.put(
                             "Paquete UDP enviado desde " + source_address + " al puerto " + str(destination_port))
 
-                    elif ip_protocol == 1:
+                    elif IP(source_address).iptype() != 'PRIVATE' and ip_protocol == 1:
                         detection_queue.put("Paquete ICMP enviado desde " + source_address)
 
         except socket.timeout:
