@@ -27,7 +27,7 @@ def reset_canary(comm_cut_queue, reset_iptables_queue):
     os.execl(sys.executable, sys.executable, *sys.argv)
 
 
-def delete_ip(observer_window, ip_list, comm_cut_queue):
+def delete_ip(observer_window, ip_list, comm_cut_queue, reset_iptables_queue):
     def destroy_ip():
         try:
             bad_ip = str(white_list.get(white_list.curselection()))
@@ -36,7 +36,7 @@ def delete_ip(observer_window, ip_list, comm_cut_queue):
                     if str(good_ip).strip("\n") != bad_ip:
                         f.write(str(good_ip) + "\n")
             delete_window.destroy()
-            reset_canary(comm_cut_queue)
+            reset_canary(comm_cut_queue, reset_iptables_queue)
         except TclError:
             error_message(delete_window, "Selecciona una IP de la lista")
 
@@ -69,7 +69,7 @@ def delete_ip(observer_window, ip_list, comm_cut_queue):
         index += 1
 
 
-def add_ip(observer_window, ip_list, comm_cut_queue):
+def add_ip(observer_window, ip_list, comm_cut_queue, reset_iptables_queue):
     def insert_ip():
         if ip_entry.get() == "":
             error_message(add_window, "El campo de texto no puede estar vacío")
@@ -83,7 +83,7 @@ def add_ip(observer_window, ip_list, comm_cut_queue):
                     with open("ip.txt", "a") as f:
                         f.write(new_ip + "\n")
                     add_window.destroy()
-                    reset_canary(comm_cut_queue)
+                    reset_canary(comm_cut_queue, reset_iptables_queue)
             except socket.error:
                 error_message(add_window, "La IP debe tener una estructura XXX.XXX.XXX.XXX (p.e. 194.153.205.26)")
 
@@ -143,12 +143,12 @@ def observer(detection_queue, comm_cut_queue, reset_iptables_queue, ip_list):
     reset_button.place(rely=0.975, relx=0.99, anchor=SE)
 
     add_button = Button(observer_window, font=('arial', 15), text='Insertar IP',
-                        command=lambda: add_ip(observer_window, ip_list, comm_cut_queue))
+                        command=lambda: add_ip(observer_window, ip_list, comm_cut_queue, reset_iptables_queue))
     add_button.pack()
     add_button.place(rely=0.025, relx=0.01, anchor=NW)
 
     delete_button = Button(observer_window, font=('arial', 15), text='Eliminar IP',
-                           command=lambda: delete_ip(observer_window, ip_list, comm_cut_queue))
+                           command=lambda: delete_ip(observer_window, ip_list, comm_cut_queue, reset_iptables_queue))
     delete_button.pack()
     delete_button.place(rely=0.1, relx=0.01, anchor=NW)
 
