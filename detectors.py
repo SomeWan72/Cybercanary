@@ -1,7 +1,7 @@
 import socket
 import struct
 import subprocess
-
+import time
 from IPy import IP
 
 
@@ -32,6 +32,7 @@ def get_flags(packet):
 
 def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list):
     suspects = dict()
+    suspects_time = dict()
     while comm_cut_queue.empty():
         try:
             packet = s.recvfrom(65565)
@@ -69,11 +70,15 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
                             if flags[4] == "SYN":
                                 if source_address not in suspects:
                                     suspects[source_address] = 0
+                                    suspects_time[source_address] = time.time()
 
                                 suspects[source_address] += 1
 
                                 if suspects[source_address] == 50:
                                     detection_queue.put("Escaneo de puertos detectado desde " + source_address)
+                                elif suspects_time[source_address] + 5 < time.time():
+                                    del suspects[source_address]
+                                    del suspects_time[source_address]
 
                     elif IP(source_address).iptype() != 'PRIVATE' and ip_protocol == 17:
                         udp_start = ip_length + eth_length
