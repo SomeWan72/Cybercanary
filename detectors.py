@@ -37,7 +37,6 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
         try:
             packet = s.recvfrom(65565)
             packet = packet[0]
-
             eth_length = 14
             eth_char = packet[:eth_length]
             eth_header = struct.unpack('!6s6sH', eth_char)
@@ -46,9 +45,7 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
             if eth_protocol == 8:
                 ip_char = packet[eth_length:eth_length + 20]
                 ip_header = struct.unpack('!BBHHHBBH4s4s', ip_char)
-
                 ihl = ip_header[0] & 0xF
-
                 ip_length = ihl * 4
                 ip_protocol = ip_header[6]
                 source_address = socket.inet_ntoa(ip_header[8])
@@ -58,7 +55,6 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
                         tcp_start = ip_length + eth_length
                         tcp_char = packet[tcp_start:tcp_start + 20]
                         tcp_header = struct.unpack('!HHLLBBHHH', tcp_char)
-
                         destination_port = tcp_header[1]
                         flags = get_flags(tcp_header[5])
 
@@ -71,9 +67,7 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
                                 if source_address not in suspects:
                                     suspects[source_address] = 0
                                     suspects_time[source_address] = time.time()
-
                                 suspects[source_address] += 1
-
                                 if suspects[source_address] == 50:
                                     detection_queue.put("Escaneo de puertos detectado desde " + source_address)
                                 elif suspects_time[source_address] + 5 < time.time():
@@ -84,9 +78,7 @@ def detectors(detection_queue, comm_cut_queue, reset_iptables_queue, s, ip_list)
                         udp_start = ip_length + eth_length
                         udp_char = packet[udp_start:udp_start + 8]
                         udp_header = struct.unpack('!HHHH', udp_char)
-
                         destination_port = udp_header[1]
-
                         detection_queue.put(
                             "Paquete UDP enviado desde " + source_address + " al puerto " + str(destination_port))
 

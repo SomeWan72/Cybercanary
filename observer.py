@@ -115,7 +115,6 @@ def observer(detection_queue, comm_cut_queue, reset_iptables_queue, ip_list):
     observer_window.attributes("-fullscreen", True)
     observer_window.configure(background='black')
     observer_window.title("Canario")
-    observer_window.bind("x", quit)
 
     clock_label = Label(observer_window, font=('arial', 150, 'bold'), fg='yellow', bg='black')
     clock_label.pack()
@@ -170,7 +169,6 @@ def observer(detection_queue, comm_cut_queue, reset_iptables_queue, ip_list):
             warning_window = Toplevel(observer_window)
             warning_window.configure(background='black')
             warning_window.title("Canario")
-            warning_window.bind("x", quit)
 
             warning_label = Label(warning_window, font=('arial', 150, 'bold'), fg='red', bg='black')
             warning_label.pack()
